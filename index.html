@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Adivinhação de Sequência de Números</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000; /* Fundo preto */
+            color: #fff; /* Texto branco */
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #333; /* Fundo escuro para o container */
+        }
+        h1 {
+            color: #fff;
+        }
+        .result {
+            margin-top: 10px;
+        }
+        .input-container {
+            margin-top: 20px;
+        }
+        input {
+            padding: 8px;
+            margin-right: 10px;
+            width: 50px;
+            text-align: center;
+            background-color: #555; /* Cor de fundo do input */
+            border: 1px solid #ddd;
+            color: #fff; /* Texto dentro do input */
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .attempts-list {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Jogo de Adivinhação de Sequência de Números</h1>
+    <p>O programa gerou uma sequência de 3 números entre 1 e 9. Você tem que adivinhar.</p>
+
+    <div class="input-container">
+        <label for="guess">Digite sua tentativa (ex: 372): </label>
+        <input type="text" id="guess" maxlength="3" placeholder="Ex: 372">
+        <button onclick="checkGuess()">Fazer Tentativa</button>
+    </div>
+
+    <div class="result">
+        <h3>Resultado das Tentativas:</h3>
+        <ul id="attempts-list"></ul>
+    </div>
+
+    <h2 id="status-message"></h2>
+</div>
+
+<script>
+    let secretSequence = "";
+    let attempts = 0;
+
+    // Função para gerar a sequência aleatória
+    function generateSequence() {
+        const digits = [];
+        while (digits.length < 3) {
+            const randomNum = Math.floor(Math.random() * 9) + 1;
+            if (!digits.includes(randomNum)) {
+                digits.push(randomNum);
+            }
+        }
+        secretSequence = digits.join('');
+        console.log("Sequência secreta gerada:", secretSequence); // Para fins de debug
+    }
+
+    // Função para verificar os números na posição correta
+    function checkCorrectPosition(guessArr, secretArr) {
+        let correctPosition = 0;
+        for (let i = 0; i < 3; i++) {
+            if (guessArr[i] === secretArr[i]) {
+                correctPosition++;
+                guessArr[i] = null;  // Marca como verificado
+                secretArr[i] = null; // Marca como verificado
+            }
+        }
+        return correctPosition;
+    }
+
+    // Função para verificar os números corretos, mas fora da posição
+    function checkCorrectNumbers(guessArr, secretArr) {
+        let correctCount = 0;
+        for (let i = 0; i < 3; i++) {
+            if (guessArr[i] !== null && secretArr.includes(guessArr[i])) {
+                correctCount++;
+                secretArr[secretArr.indexOf(guessArr[i])] = null; // Remove o número da sequência secreta para não contar mais de uma vez
+            }
+        }
+        return correctCount;
+    }
+
+    // Função para checar a tentativa do jogador
+    function checkGuess() {
+        const guess = document.getElementById('guess').value;
+
+        // Validação da entrada
+        if (guess.length !== 3 || new Set(guess).size !== 3 || !/^[1-9]{3}$/.test(guess)) {
+            alert("Por favor, insira uma sequência válida de 3 números entre 1 e 9, sem repetições.");
+            return;
+        }
+
+        attempts++;
+
+        // Converte a sequência secreta e a tentativa em arrays
+        const guessArr = guess.split('');
+        const secretArr = secretSequence.split('');
+
+        // Verifica os números na posição correta
+        let correctPosition = checkCorrectPosition([...guessArr], [...secretArr]);
+
+        // Verifica os números corretos, mas fora da posição
+        let correctCount = checkCorrectNumbers([...guessArr], [...secretArr]);
+
+        // Exibir resultado da tentativa
+        const attemptList = document.getElementById('attempts-list');
+        const listItem = document.createElement('li');
+        listItem.textContent = `Tentativa ${attempts}: ${guess} - ${correctCount} número(s) correto(s), ${correctPosition} na ordem correta`;
+        attemptList.appendChild(listItem);
+
+        // Se todos os números estão corretos e na posição correta
+        if (correctPosition === 3) {
+            document.getElementById('status-message').innerText = "Parabéns, você acertou a sequência!";
+        } else {
+            document.getElementById('status-message').innerText = `Tentativa ${attempts} feita. Continue tentando!`;
+        }
+    }
+
+    // Iniciar o jogo quando a página carregar
+    window.onload = function() {
+        generateSequence(); // Gera a sequência secreta
+    };
+</script>
+
+</body>
+</html>
